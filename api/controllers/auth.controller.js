@@ -19,10 +19,15 @@ export const signup = async (req, res, next) => {
 
   // const hashedPassword = bcryptjs.hashSync(password, 10);
 
+  const isFirstAccount = (await User.countDocuments({})) === 0;
+  const isAdmin = isFirstAccount ? true : false;
+
+
   const newUser = new User({
     username,
     email,
     password,
+    isAdmin
   });
 
   try {
@@ -45,7 +50,10 @@ export const signin = async (req, res, next) => {
     if (!validUser) {
       return next(errorHandler(404, 'User not found'));
     }
-    const validPassword = bcryptjs.compareSync(password, validUser.password);
+
+
+
+    const validPassword = await validUser.comparePassword(password);
     if (!validPassword) {
       return next(errorHandler(400, 'Invalid password'));
     }
@@ -55,16 +63,20 @@ export const signin = async (req, res, next) => {
     );
 
     const { password: pass, ...rest } = validUser._doc;
-
+    const oneDay = 1000 * 60 * 60 * 24;
     res
       .status(200)
       .cookie('access_token', token, {
         httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    signed: true,
+    expires: new Date(Date.now() + oneDay),
       })
       .json(rest);
   } catch (error) {
     next(error);
   }
+ 
 };
 
 export const google = async (req, res, next) => {
