@@ -1,5 +1,8 @@
 
 import temp from "../../assets/sec.png";
+import { Link } from "react-router-dom";
+
+
 const Section4 = () => {
   return (
     <div className="py-16 -mt-4">
@@ -24,7 +27,7 @@ const Section4 = () => {
             With most comprehensive database of various tender opportunities in different business sectors, CheretaGate aims to level the playing field so that businesses of any size can have easy and affordable access to various contracting opportunities.
             </p>
 
-            <button className="btn btn-primary opacity-75 px-12 text-white mr-4">Get Started</button>
+            <Link to='/search' className="btn btn-primary opacity-75 opacity-75 px-12 text-white mr-4">Get Started</Link>
           </div>
         </div>
       </div>

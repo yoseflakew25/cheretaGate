@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { Link } from 'react-router-dom'
 const Cta = () => {
   return (
    
@@ -13,7 +13,7 @@ const Cta = () => {
         ea nihil.
       </p>
 
-      <button className="btn btn-primary opacity-75 px-12 text-white mt-8">Get Started</button>
+      <Link to='/search' className="btn btn-primary opacity-75 opacity-75 px-12 text-white mr-4 mt-8">Get Started</Link>
     </div>
 
 

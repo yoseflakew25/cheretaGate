@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const Error = () => {
   return (
     <>
-      <section className="relative z-10 bg-primary opacity-75 py-[120px]">
+      <section className="relative z-10 bg-primary opacity-75 py-[120px] my-16">
         <div className="container mx-auto">
           <div className="mx-4 flex">
             <div className="w-full px-4">
