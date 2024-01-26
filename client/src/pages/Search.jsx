@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar'
 
 import TenderLists from '../components/TenderLists'
 
-const Tenders = () => {
+const Search = () => {
   return (
 <div className='grid' style={{ gridTemplateColumns: '1fr 3fr' }}>
       
@@ -16,4 +16,4 @@ const Tenders = () => {
   )
 }
 
-export default Tenders
+export default Search

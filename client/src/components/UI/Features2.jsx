@@ -1,4 +1,4 @@
-import React from 'react'
+
 import temp from "../../assets/sec.png";
 const Section4 = () => {
   return (

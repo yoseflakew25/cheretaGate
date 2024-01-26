@@ -43,7 +43,7 @@ export default function Header() {
         >
     
           <NavLink
-            to="/tenders"
+            to="/search"
             className="text-gray-800 hover:text-primary opacity-75"
             activeClassName="text-primary opacity-75"
           >
@@ -83,7 +83,7 @@ export default function Header() {
         <nav className="flex items-center justify-center p-4 overflow-x-auto text-sm font-medium gap-8">
          
           <NavLink
-            to="/tenders"
+            to="/search"
             className="text-gray-800 hover:text-primary opacity-75"
             activeClassName="text-primary opacity-75"
           >
