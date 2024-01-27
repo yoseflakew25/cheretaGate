@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import temp from '../assets/sec.png'
 import OAuth from '../components/OAuth';
-
+import { toast } from "react-toastify";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({});
@@ -104,7 +104,9 @@ export default function SignUp() {
     <span className="text-primary">Sign in</span>
   </Link>
 </div>
-{errorMessage && <p className="text-red-500 mt-5">{errorMessage}</p>}
+
+
+{errorMessage && toast.error({errorMessage})}
 </div> 
 
 

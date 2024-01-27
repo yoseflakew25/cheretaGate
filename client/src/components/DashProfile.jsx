@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-// import {
-//   getDownloadURL,
-//   getStorage,
-//   ref,
-//   uploadBytesResumable,
-// } from 'firebase/storage';
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from 'firebase/storage';
 import { app } from '../firebase';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -20,7 +20,7 @@ import {
 } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 
 import {
 
@@ -28,7 +28,7 @@ import {
 
 } from 'react-icons/hi';
 
-
+import { toast } from "react-toastify";
 
 
 const DashProfile = () => {
@@ -45,7 +45,7 @@ const DashProfile = () => {
   const [formData, setFormData] = useState({});
   const filePickerRef = useRef();
   const dispatch = useDispatch();
-
+  const navigate = useNavigate()
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -54,15 +54,11 @@ const DashProfile = () => {
       setImageFileUrl(URL.createObjectURL(file));
     }
   };
-
-
   useEffect(() => {
     if (imageFile) {
-      // uploadImage();
+      uploadImage();
     }
   }, [imageFile]);
-
-
 
 
   const uploadImage = async () => {
@@ -76,42 +72,39 @@ const DashProfile = () => {
     //     }
     //   }
     // }
+    setImageFileUploading(true);
+    setImageFileUploadError(null);
+    const storage = getStorage(app);
+    const fileName = new Date().getTime() + imageFile.name;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
 
-
-
-
-    // setImageFileUploading(true);
-    // setImageFileUploadError(null);
-    // const storage = getStorage(app);
-    // const fileName = new Date().getTime() + imageFile.name;
-    // const storageRef = ref(storage, fileName);
-    // const uploadTask = uploadBytesResumable(storageRef, imageFile);
-    // uploadTask.on(
-    //   'state_changed',
-    //   (snapshot) => {
-    //     const progress =
-    //       (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-
-    //     setImageFileUploadProgress(progress.toFixed(0));
-    //   },
-    //   (error) => {
-    //     setImageFileUploadError(
-    //       'Could not upload image (File must be less than 2MB)'
-    //     );
-    //     setImageFileUploadProgress(null);
-    //     setImageFile(null);
-    //     setImageFileUrl(null);
-    //     setImageFileUploading(false);
-    //   },
-    //   () => {
-    //     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-    //       setImageFileUrl(downloadURL);
-    //       setFormData({ ...formData, profilePicture: downloadURL });
-    //       setImageFileUploading(false);
-    //     });
-    //   }
-    // );
+        setImageFileUploadProgress(progress.toFixed(0));
+      },
+      (error) => {
+        setImageFileUploadError(
+          'Could not upload image (File must be less than 2MB)'
+        );
+        setImageFileUploadProgress(null);
+        setImageFile(null);
+        setImageFileUrl(null);
+        setImageFileUploading(false);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          setImageFileUrl(downloadURL);
+          setFormData({ ...formData, profilePicture: downloadURL });
+          setImageFileUploading(false);
+        });
+      }
+    );
   };
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -119,57 +112,56 @@ const DashProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // setUpdateUserError(null);
-    // setUpdateUserSuccess(null);
-    // if (Object.keys(formData).length === 0) {
-    //   setUpdateUserError('No changes made');
-    //   return;
-    // }
-    // if (imageFileUploading) {
-    //   setUpdateUserError('Please wait for image to upload');
-    //   return;
-    // }
-    // try {
-    //   dispatch(updateStart());
-    //   const res = await fetch(`/api/user/update/${currentUser._id}`, {
-    //     method: 'PUT',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(formData),
-    //   });
-    //   const data = await res.json();
-    //   if (!res.ok) {
-    //     dispatch(updateFailure(data.message));
-    //     setUpdateUserError(data.message);
-    //   } else {
-    //     dispatch(updateSuccess(data));
-    //     setUpdateUserSuccess("User's profile updated successfully");
-    //   }
-    // } catch (error) {
-    //   dispatch(updateFailure(error.message));
-    //   setUpdateUserError(error.message);
-    // }
-
-    console.log('hello world')
+    setUpdateUserError(null);
+    setUpdateUserSuccess(null);
+    if (Object.keys(formData).length === 0) {
+      setUpdateUserError('No changes made');
+      return;
+    }
+    if (imageFileUploading) {
+      setUpdateUserError('Please wait for image to upload');
+      return;
+    }
+    try {
+      dispatch(updateStart());
+      console.log(currentUser._id)
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        dispatch(updateFailure(data.message));
+        setUpdateUserError(data.message);
+      } else {
+        dispatch(updateSuccess(data));
+        setUpdateUserSuccess("User's profile updated successfully");
+      }
+    } catch (error) {
+      dispatch(updateFailure(error.message));
+      setUpdateUserError(error.message);
+    }
   };
   const handleDeleteUser = async () => {
-    // setShowModal(false);
-    // try {
-    //   dispatch(deleteUserStart());
-    //   const res = await fetch(`/api/user/delete/${currentUser._id}`, {
-    //     method: 'DELETE',
-    //   });
-    //   const data = await res.json();
-    //   if (!res.ok) {
-    //     dispatch(deleteUserFailure(data.message));
-    //   } else {
-    //     dispatch(deleteUserSuccess(data));
-    //   }
-    // } catch (error) {
-    //   dispatch(deleteUserFailure(error.message));
-    // }
-    console.log('hello world')
+    setShowModal(false);
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        dispatch(deleteUserFailure(data.message));
+      } else {
+        dispatch(deleteUserSuccess(data));
+        navigate('/sign-in')
+      }
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
   };
 
   const handleSignout = async () => {
@@ -182,6 +174,8 @@ const DashProfile = () => {
         console.log(data.message);
       } else {
         dispatch(signoutSuccess());
+        navigate('/sign-in')
+        
       }
     } catch (error) {
       console.log(error.message);
@@ -193,22 +187,10 @@ const DashProfile = () => {
 
   return (
 
-    <div className="rounded-3xl bg-white w-full lg:px-80 pt-8 pb-16" >
+    <div className="rounded-3xl bg-white w-full lg:px-80 pt-2 pb-16" >
       <h1 className="text-3xl font-semibold text-center my-7 text-primary">Profile</h1>
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <div className='w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full'>
-
-          <img src={currentUser.profilePicture} alt="user" className='rounded-full w-full h-full object-cover border-8 border-[#f4d9ff]' />
-          
-        </div>
-
-
-
-
-
-
-
-      <input
+      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+        <input
           type='file'
           accept='image/*'
           onChange={handleImageChange}
@@ -216,35 +198,102 @@ const DashProfile = () => {
           hidden
         />
 
+<div
+          className='relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full'
+          onClick={() => filePickerRef.current.click()}
+        >
+          {imageFileUploadProgress && (
+            <CircularProgressbar
+              value={imageFileUploadProgress || 0}
+              text={`${imageFileUploadProgress}%`}
+              strokeWidth={5}
+              styles={{
+                root: {
+                  width: '100%',
+                  height: '100%',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                },
+                path: {
+                  stroke: `rgba(62, 152, 199, ${
+                    imageFileUploadProgress / 100
+                  })`,
+                },
+              }}
+            />
+          )}
+          <img
+            src={imageFileUrl || currentUser.profilePicture}
+            alt='user'
+            className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
+              imageFileUploadProgress &&
+              imageFileUploadProgress < 100 &&
+              'opacity-60'
+            }`}
+          />
+        </div>
+
+        {imageFileUploadError && (
+
+ toast.error(imageFileUploadError)
+
+
+        )}
+
+
+
+
+
+   
+
         <input
           type="text"
           placeholder="username" 
-         defaultValue={currentUser.username}
+          defaultValue={currentUser.username}
+          onChange={handleChange}
           id="username"
           className="border p-3 rounded-lg"
          
         />
         <input
-          type="email"
-          placeholder="email"
-          id="email"
+          type='email'
+          id='email'
+          placeholder='email'
           defaultValue={currentUser.email}
+          onChange={handleChange}
           className="border p-3 rounded-lg"
          
         />
         <input
-          type="password"
-          placeholder="password"
-        
-          id="password"
+          type='password'
+          id='password'
+          placeholder='password'
+          onChange={handleChange}
           className="border p-3 rounded-lg"
         />
         <button
          type='submit'
           className="transition-colors duration-300 bg-primary opacity-75 text-white rounded-lg p-3 uppercase hover:opacity-100 disabled:opacity-80"
+          disabled={loading || imageFileUploading}
         >
-         update
+          {loading ? 'Loading...' : 'Update'}
         </button>
+
+
+        {currentUser.isAdmin && (
+          <Link to={'/create-post'}>
+                  <button
+         type='button'
+          className="transition-colors duration-300 border border-primary opacity-75 text-primary rounded-lg p-3 uppercase hover:bg-primary hover:text-white disabled:opacity-80 text-center w-full"
+        >
+          Create a post
+        </button>
+          </Link>
+        )}
+
+
+
         {/* <Link
          to='/dashboard'
           className="transition-colors duration-300 border border-primary opacity-75 text-primary rounded-lg p-3 uppercase hover:bg-primary hover:text-white disabled:opacity-80 text-center"
@@ -254,11 +303,26 @@ const DashProfile = () => {
  
       </form>
       <div className="flex justify-between mt-5">
-      <button  type='button' onClick={handleSignout} className='text-red-600  hover:text-primary  font-medium  rounded-md flex gap-2'>
+      {/* <button  type='button' onClick={() => setShowModal(true)} className='text-red-600  hover:text-primary  font-medium  rounded-md flex gap-2'>
              
                Delete Account
              
-            </button>
+            </button> */}
+
+
+            {/* Open the modal using document.getElementById('ID').showModal() method */}
+<button className='text-red-600  hover:text-primary  font-medium  rounded-md flex gap-2' onClick={()=>document.getElementById('my_modal_1').showModal()}>Delete Account</button>
+<dialog id="my_modal_1" className="modal">
+  <div className="modal-box p-8">
+    <h3 className="font-semi text-lg">Are you sure you want to delete your account?</h3>
+    <div className="modal-action">
+      <form method="dialog">
+        {/* if there is a button in form, it will close the modal */}
+        <button className="btn">Close</button>
+      </form>
+    </div>
+  </div>
+</dialog>
         <button  type='button' onClick={handleSignout} className='text-red-600  hover:text-primary opacity-75 font-medium  rounded-md flex gap-2'>
                <HiArrowSmRight className='w-6 h-6 mr-2'/>
                Sign Out
@@ -266,12 +330,25 @@ const DashProfile = () => {
             </button>
       </div>
 
+
+      {updateUserSuccess && (
+         toast.success(updateUserSuccess)
+
+      )}
+      {updateUserError && (
+         toast.error(updateUserError)
+   
+      )}
+      {error && (
+               toast.error(error)
+     
+      )}
+
+
    
     
     </div>
-  
-
-);
+  );
 }
 
 export default DashProfile

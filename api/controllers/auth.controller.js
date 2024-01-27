@@ -64,15 +64,15 @@ export const signin = async (req, res, next) => {
 
     const { password: pass, ...rest } = validUser._doc;
     const oneDay = 1000 * 60 * 60 * 24;
+
     res
-      .status(200)
-      .cookie('access_token', token, {
-        httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    signed: true,
-    expires: new Date(Date.now() + oneDay),
-      })
-      .json(rest);
+    .status(200)
+    .cookie('access_token', token, {
+      httpOnly: true,
+    })
+    .json(rest);
+
+
   } catch (error) {
     next(error);
   }

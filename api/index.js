@@ -41,7 +41,7 @@ app.use(mongoSanitize());
 
 // Parse JSON bodies and cookies
 app.use(express.json());
-app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cookieParser());
 
 // Start server
 app.listen(3000, () => {
