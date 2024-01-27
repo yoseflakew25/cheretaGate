@@ -27,8 +27,9 @@ import {
   HiArrowSmRight,
 
 } from 'react-icons/hi';
-
+import SpringModal from './UI/SpringModal'
 import { toast } from "react-toastify";
+
 
 
 const DashProfile = () => {
@@ -148,6 +149,7 @@ const DashProfile = () => {
   const handleDeleteUser = async () => {
     setShowModal(false);
     try {
+      console.log("delete user client")
       dispatch(deleteUserStart());
       const res = await fetch(`/api/user/delete/${currentUser._id}`, {
         method: 'DELETE',
@@ -309,20 +311,9 @@ const DashProfile = () => {
              
             </button> */}
 
-
+<SpringModal  />
             {/* Open the modal using document.getElementById('ID').showModal() method */}
-<button className='text-red-600  hover:text-primary  font-medium  rounded-md flex gap-2' onClick={()=>document.getElementById('my_modal_1').showModal()}>Delete Account</button>
-<dialog id="my_modal_1" className="modal">
-  <div className="modal-box p-8">
-    <h3 className="font-semi text-lg">Are you sure you want to delete your account?</h3>
-    <div className="modal-action">
-      <form method="dialog">
-        {/* if there is a button in form, it will close the modal */}
-        <button className="btn">Close</button>
-      </form>
-    </div>
-  </div>
-</dialog>
+
         <button  type='button' onClick={handleSignout} className='text-red-600  hover:text-primary opacity-75 font-medium  rounded-md flex gap-2'>
                <HiArrowSmRight className='w-6 h-6 mr-2'/>
                Sign Out

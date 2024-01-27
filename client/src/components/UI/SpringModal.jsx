@@ -1,23 +1,65 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { FiAlertCircle } from "react-icons/fi";
 import { useState } from "react";
+import {
+
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure,
+ 
+} from '../../redux/user/userSlice';
+import { useDispatch } from 'react-redux';
+
+import { Link,useNavigate } from 'react-router-dom';
+
+import { useSelector } from 'react-redux';
+
+
+
 
 const ExampleWrapper = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate()
+  const { currentUser, error, loading } = useSelector((state) => state.user);
+
+
+  const handleDeleteUser = async () => {
+  
+    try {
+      console.log("delete user client")
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        dispatch(deleteUserFailure(data.message));
+      } else {
+        dispatch(deleteUserSuccess(data));
+        navigate('/sign-in')
+      }
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
+
+
   return (
-    <div className="px-4 py-64 bg-slate-900 grid place-content-center">
+   <>
       <button
         onClick={() => setIsOpen(true)}
-        className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium px-4 py-2 rounded hover:opacity-90 transition-opacity"
-      >
-        Open Modal
+        className='text-red-600  hover:text-primary  font-medium  rounded-md flex gap-2'
+        >
+        Delete Account
       </button>
-      <SpringModal isOpen={isOpen} setIsOpen={setIsOpen} />
-    </div>
+      <SpringModal isOpen={isOpen} setIsOpen={setIsOpen} handleDeleteUser={handleDeleteUser} />
+        </>
+   
   );
 };
 
-const SpringModal = ({ isOpen, setIsOpen }) => {
+const SpringModal = ({ isOpen, setIsOpen,handleDeleteUser }) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -41,24 +83,23 @@ const SpringModal = ({ isOpen, setIsOpen }) => {
                 <FiAlertCircle />
               </div>
               <h3 className="text-3xl font-bold text-center mb-2">
-                One more thing!
+              Are you sure?
               </h3>
               <p className="text-center mb-6">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Id
-                aperiam vitae, sapiente ducimus eveniet in velit.
+              Are you sure you want to delete your account?
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleDeleteUser}
                   className="bg-transparent hover:bg-white/10 transition-colors text-white font-semibold w-full py-2 rounded"
                 >
-                  Nah, go back
+                  Yes, I'm sure
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
                   className="bg-white hover:opacity-90 transition-opacity text-indigo-600 font-semibold w-full py-2 rounded"
                 >
-                  Understood!
+                 No, cancel
                 </button>
               </div>
             </div>
